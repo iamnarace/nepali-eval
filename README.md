@@ -12,6 +12,10 @@ separate, reviewable references.
 > No model results are published here and none should be inferred. See [docs/METHODOLOGY.md](docs/METHODOLOGY.md) and
 > [docs/REVIEW_GUIDE.md](docs/REVIEW_GUIDE.md) for what still needs native-speaker review.
 
+![Terminal session: validating and linting the seed tasks, normalising a Nepali sentence, and running the oracle and echo sanity adapters](docs/screenshots/terminal.png)
+
+*Real output of the commands shown. The `oracle` adapter returns the first reference (a ceiling check) and `echo` returns the prompt (a floor check); neither is a model result.*
+
 ## Why this exists
 Existing Nepali work (for example Nep-gLUE, NLUE and cultural-commonsense sets) provides datasets for
 understanding tasks, and projects such as the Nepali ASR/translation repository report BLEU/chrF++ from
