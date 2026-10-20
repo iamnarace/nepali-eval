@@ -9,10 +9,13 @@ from __future__ import annotations
 import json
 import os
 import shlex
-import subprocess
+import subprocess  # nosec B404
 import urllib.error
 import urllib.request
 from pathlib import Path
+from urllib.parse import urlsplit
+
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
 class AdapterError(RuntimeError):
@@ -77,7 +80,8 @@ class CommandAdapter(Adapter):
 
     def predict(self, task) -> str:
         try:
-            r = subprocess.run(
+            # argv list from shlex.split, shell=False; the command is chosen by the user (opt-in adapter).
+            r = subprocess.run(  # nosec B603
                 self.argv, input=task.prompt, capture_output=True, text=True,
                 timeout=self.timeout, encoding="utf-8", check=False,
             )
@@ -96,11 +100,16 @@ class OpenAICompatAdapter(Adapter):
 
     def __init__(self, base_url: str, model: str, api_key_env: str | None = None,
                  timeout: float = 120):
+        parts = urlsplit(base_url)
+        if parts.scheme not in ("http", "https") or not parts.hostname:
+            raise AdapterError("base URL must be an http(s) URL (file:// and other schemes are refused)")
         self.url = base_url.rstrip("/") + "/chat/completions"
         self.model = model
         self.key = os.environ.get(api_key_env, "") if api_key_env else ""
         if api_key_env and not self.key:
             raise AdapterError(f"environment variable {api_key_env} is not set")
+        if self.key and parts.scheme == "http" and parts.hostname not in LOCAL_HOSTS:
+            raise AdapterError("refusing to send an API key over plain http to a non-local host; use https")
         self.timeout = timeout
         self.name = f"openai-compat:{model}"
 
@@ -115,7 +124,8 @@ class OpenAICompatAdapter(Adapter):
             headers["Authorization"] = f"Bearer {self.key}"
         req = urllib.request.Request(self.url, data=body, headers=headers, method="POST")
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310
+            # The URL scheme was validated as http(s) in __init__.
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310  # nosec B310
                 data = json.load(resp)
             return data["choices"][0]["message"]["content"].strip()
         except (urllib.error.URLError, KeyError, IndexError, json.JSONDecodeError, OSError) as e:

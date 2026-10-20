@@ -9,7 +9,8 @@ separate, reviewable references.
 
 > **Status: v0.1, early.** The bundled 24 seed tasks only exercise the harness. They were written by
 > the maintainers with AI assistance, are **unreviewed by native speakers**, and are **not a benchmark**.
-> No model results are published here and none should be inferred. See [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
+> No model results are published here and none should be inferred. See [docs/METHODOLOGY.md](docs/METHODOLOGY.md) and
+> [docs/REVIEW_GUIDE.md](docs/REVIEW_GUIDE.md) for what still needs native-speaker review.
 
 ## Why this exists
 Existing Nepali work (for example Nep-gLUE, NLUE and cultural-commonsense sets) provides datasets for
@@ -46,6 +47,18 @@ nepali-eval run --tasks tasks/seed_v0.jsonl --adapter openai --base-url http://l
    --model my-model --api-key-env MY_KEY --out out/local
 nepali-eval normalize "भोलि १० बजे।"
 ```
+### Quality, review and interoperability commands
+```bash
+nepali-eval lint tasks/seed_v0.jsonl [--strict] [-v]      # automated heuristics (NOT a linguistic review)
+nepali-eval export-review tasks/seed_v0.jsonl --out review.csv        # spreadsheet for native speakers
+nepali-eval apply-review tasks/seed_v0.jsonl review.csv --out tasks/seed_v0.reviewed.jsonl
+nepali-eval import-ndc accepted.jsonl --out tasks/from_ndc.jsonl --direction ne-en
+```
+`import-ndc` converts records from [nepali-data-commons](https://github.com/iamnarace/nepali-data-commons) into tasks
+(format only; no shared code). Converted tasks stay `unreviewed` unless you pass `--trust-ndc-review`, because a
+data-commons `accepted` status means a second person reviewed the record, not that a verified native speaker validated it.
+See [docs/REVIEW_GUIDE.md](docs/REVIEW_GUIDE.md).
+
 Predictions file: one JSON object per line, `{"id": "ne-en-001", "prediction": "..."}`.
 
 Real output of the two sanity adapters on the seed tasks (these are *not* model results — they show the
@@ -66,7 +79,7 @@ echo:   24 tasks, 0 errors   chrfpp:  11.598  exact: 0.000  numbers: 1.000  deva
 
 ## Development
 ```bash
-ruff check . && python -m pytest -q       # 33 tests, includes sacrebleu parity and a local HTTP server
+ruff check . && python -m pytest -q       # 62 tests: sacrebleu parity, local HTTP server, lint, review round-trip, import
 ```
 Layout: `src/nepali_eval/{normalize,metrics,tasks,adapters,runner,report,cli}.py`, `tasks/`, `tests/`, `docs/`.
 
