@@ -116,6 +116,7 @@ def test_openai_compatible_adapter_against_local_server(monkeypatch):
         assert _Handler.seen["body"]["temperature"] == 0
     finally:
         srv.shutdown()
+        srv.server_close()
 
 
 def test_openai_adapter_requires_declared_key_and_reports_connection_errors(monkeypatch):
