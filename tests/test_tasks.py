@@ -26,7 +26,7 @@ def test_seed_file_valid_and_all_unreviewed():
 def test_seed_numbers_survive_digit_conversion():
     from nepali_eval.normalize import extract_numbers
     t = {t.id: t for t in load_tasks(SEED)}["ne-en-010"]
-    assert extract_numbers(t.prompt) == ["9800000000"] == extract_numbers(t.references[0])
+    assert extract_numbers(t.prompt) == ["9012345678"] == extract_numbers(t.references[0])
 
 
 @pytest.mark.parametrize("patch,msg", [
