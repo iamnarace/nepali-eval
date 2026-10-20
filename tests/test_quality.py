@@ -50,6 +50,11 @@ def test_lint_detects(obj, code):
     assert code in codes(obj)
 
 
+@pytest.mark.parametrize("prompt", ["तँ के गर्दै छस्?", "के तँ जान्छस्?", "तँ", "तँलाई थाहा छ", "तेरो नाम के हो?"])
+def test_informal_pronoun_detected_including_word_final_chandrabindu(prompt):
+    assert "register" in codes({"prompt": prompt})
+
+
 def test_lint_is_quiet_on_clean_task_and_tagged_register():
     assert codes({"references": ["नमस्ते।", "नमस्कार।"]}) == {"unreviewed"}
     assert "register" not in codes({"prompt": "तिम्रो नाम?", "tags": ["register-informal"],

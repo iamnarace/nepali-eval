@@ -16,7 +16,9 @@ from .tasks import Task
 
 # 10-digit runs that look like a Nepali mobile number (97/98 prefix) must never ship in a public task file.
 _PHONE_LIKE = re.compile(r"(?<!\d)9[78]\d{8}(?!\d)")
-_INFORMAL = re.compile(r"तिमी|तिम्रो|तिमीलाई|तँ\b|तेरो|\btimi\b|\btimro\b", re.I)
+# \b is unreliable next to Devanagari combining marks (chandrabindu is not a "word" character), so the
+# informal pronoun is anchored at its start only.
+_INFORMAL = re.compile(r"तिमी|तिम्रो|(?<![\u0900-\u097F])तँ|तेरो|\btimi\b|\btimro\b", re.I)
 _SENTENCE_END = ("।", "?", "!", "॥")
 NEPALI_TARGET_TYPES = ("translation_en_ne", "transliteration")
 
